@@ -1,0 +1,175 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/lodash/4.16.6/lodash.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.0/css/bulma.min.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <section class="hero is-medium is-primary is-bold">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">
+          SLP Table Generator
+        </h1>
+        <h2 class="subtitle">
+          Generate Your SLP(Systematic Layout Planning) Table
+        </h2>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div id="app">
+
+        <div class="tabs">
+          <ul id="menu">
+            <li><a href="#Level">Level</a></li>
+            <li><a href="#Input">Input</a></li>
+            <li><a href="#Result">Result</a></li>
+          </ul>
+        </div>
+
+        <div class="tab-folder">
+          <div id="Input" class="tab-content">
+            <button class="button is-primary is-outlined" @click="add()">Add Row</button>
+            <table class="table">
+              <thead>
+                <th></th>
+                <th v-for="item in items">{{ item.name }}</th>
+              </thead>
+              <tbody>
+                <tr v-for="row in items">
+                  <td>
+                    <div class="field has-addons">
+                      <p class="control">
+                        <input class="input" type="text" v-model="row.name" style="width: 10em;">
+                      </p>
+                      <p class="control">
+                        <a class="button is-light" @click="remove(row)">
+                          Ｘ
+                        </a>
+                      </p>
+                    </div>
+                  </td>
+                  <td v-for="index in (quantity - row.pair.length)">-</td>
+                  <td v-for="column in row.pair">
+                    <div class="field">
+                      <p class="control">
+                        <span class="select">
+                          <select v-model="column.level">
+                            <option v-for="(level, key) in levels" :value="key">{{ level.name }}</option>
+                          </select>
+                        </span>
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="Result" class="tab-content">
+            <table class="table is-bordered">
+              <thead>
+                <th></th>
+                <th v-for="item in items">{{ item.name }}</th>
+              </thead>
+              <tbody>
+                <tr v-for="row in items">
+                  <td>{{ row.name }}</td>
+                  <td v-for="index in (quantity - row.pair.length)">-</td>
+                  <td v-for="column in row.pair">
+                    <span class="tag is-Danger is-medium">{{ levels[column.level].name }}</span>
+                    <span class="tag is-light is-medium" >{{ levels[column.level].point }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="Level" class="tab-content">
+            <table>
+              <thead>
+                <th style="padding: 5px;" v-for="level in levels">{{ level.name }}</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 5px;" v-for="level in levels">
+                    <input v-model="level.point" class="input" type="text" :placeholder="level.name">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: function () {
+        return {
+          quantity: 0,
+          index: 0,
+          items: [],
+          levels: [
+          {name: "Ａ", point: 16},
+          {name: "Ｅ", point: 8},
+          {name: "Ｉ", point: 4},
+          {name: "Ｏ", point: 2},
+          {name: "Ｕ", point: 1},
+          {name: "Ｘ", point: -2}
+          ]
+        }
+      },
+      methods: {
+        add: function () {
+          this.index += 1;
+          if (this.quantity !== 0) {
+            for (var i = 0; i < this.quantity; i++) {
+              var addY = {
+                y: this.index,
+                level: 0
+              };
+              this.items[i].pair.push(addY);
+            }
+          }
+          var addX = {
+            x: this.index,
+            name: "",
+            pair: []
+          }
+          this.items.push(addX);
+          this.quantity += 1;
+        },
+        getPoint: function (level) {
+          var index = this.levels.indexOf({name: level});
+          return index;
+        },
+        remove: function (row) {
+          var x = row.x;
+          var itemIndex = this.items.indexOf(row);
+          this.items.splice(itemIndex, 1);
+          this.quantity -= 1;
+          var find = function(el) {
+            return el.y == x;
+          }
+          for (var i = 0; i < this.items.length; i++) {
+            var index = this.items[i].pair.findIndex(find);
+            if(index >= 0) {
+              this.items[i].pair.splice(index, 1);
+            }
+          }
+        }
+      }
+    })
+  </script>
+</body>
+</html>
